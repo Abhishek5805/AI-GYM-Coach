@@ -1,8 +1,11 @@
 # AI Real-Time Gym Coach this is the main file for the streamlit app. It will import the necessary libraries and set up the page configuration. It will also display the title and a brief description of the app.
 import streamlit as st
+import os
 from services.auth.login_wall import render_login_wall
 from services.state.session_default import initial_session_defaults
 from services.config.workout_config import EXERCISE_OPTIONS
+from services.ui.style_loader import load_css, inject_local_font
+
 def main():
     st.set_page_config(
         page_icon="🏋️‍♂️",
@@ -10,6 +13,9 @@ def main():
         initial_sidebar_state="expanded",
         layout="centered",
     )
+
+    load_css(os.path.join(os.getcwd(), "static", "style.css"))
+    inject_local_font(os.path.join(os.getcwd(), "static", "AdobeClean.otf"), "AdobeClean")
 
     if not render_login_wall():
         return  # Stop further execution if the user is not logged in
