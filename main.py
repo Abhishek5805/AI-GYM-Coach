@@ -5,7 +5,7 @@ from services.auth.login_wall import render_login_wall
 from services.state.session_default import initial_session_defaults
 from services.config.workout_config import EXERCISE_OPTIONS
 from services.ui.style_loader import load_css, inject_local_font
-
+from services.persistence.exercise_repository import init_db
 def main():
     st.set_page_config(
         page_icon="🏋️‍♂️",
@@ -17,6 +17,8 @@ def main():
     load_css(os.path.join(os.getcwd(), "static", "style.css"))
     inject_local_font(os.path.join(os.getcwd(), "static", "AdobeClean.otf"), "AdobeClean")
 
+    init_db()  # Initialize the database and create tables if they don't exist
+    
     if not render_login_wall():
         return  # Stop further execution if the user is not logged in
     initial_session_defaults()
