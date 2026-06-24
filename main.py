@@ -4,8 +4,10 @@ import os
 from services.auth.login_wall import render_login_wall
 from services.state.session_default import initial_session_defaults
 from services.config.workout_config import EXERCISE_OPTIONS
-from services.ui.style_loader import load_css, inject_local_font
+from services.ui.style_loader import load_css, inject_local_font, inject_webrtc_styles
 from services.persistence.exercise_repository import init_db
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
+
 def main():
     st.set_page_config(
         page_icon="🏋️‍♂️",
@@ -18,7 +20,7 @@ def main():
     inject_local_font(os.path.join(os.getcwd(), "static", "AdobeClean.otf"), "AdobeClean")
 
     init_db()  # Initialize the database and create tables if they don't exist
-    
+
     if not render_login_wall():
         return  # Stop further execution if the user is not logged in
     initial_session_defaults()
@@ -101,9 +103,51 @@ def main():
                 st.metric("Front Knee Angle", f"{st.session_state.front_knee_angle}°")
                 st.metric("Torso Angle", f"{st.session_state.torso_angle}°")
                 st.metric("Balance Status", st.session_state.balance_status)
+    
+    st.title("⛹️ AI Real-Time Gym Coach")
+    st.markdown("### Real time pose detection with proactive AI Voice coaching")
 
+    if not workout_started:
+        st.markdown(
+            """
+            <div style="
+                border: 10px dashed #444;
+                border-radius: 0px;
+                padding: 48px 32px;
+                text-align: center;
+                color: #888;
+                margin-top: 32px;
+                margin-bottom: 32px;
+            ">
+                <h2 style="color:#ccc; margin-bottom:8px;">👈 Set your workout plan</h2>
+                <p style="font-size:1.05rem;">
+                    Choose your exercise, sets and reps in the sidebar,<br>
+                    then click <strong>Start Workout</strong> to activate the camera and AI coach.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        
+    else:
+        context = webrtc_streamer(
+            key="exercise-analysis",
+            mode=WebRtcMode.SENDRECV,
+            video_processor_factory=None,  # Replace with your actual video processor class
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            media_stream_constraints={
+                "video": True,
+                "audio": False
+            },
+            async_processing=True
+        )
 
+        
 
+    st.divider()
+
+    st.markdown("#### Workout History")
+    inject_webrtc_styles()  # Inject the custom styles for WebRTC elements 
 
 
 
